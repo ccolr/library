@@ -6,30 +6,39 @@
 function isFunction(target) {
     return typeof target === 'function';
 }
+
 function isString(target) {
     return typeof target === 'string';
 }
+
 function isNumber(target) {
     return typeof target === 'number';
 }
+
 function isBoolean(target) {
     return typeof target === 'boolean';
 }
+
 function isUndefined(target) {
     return typeof target === 'undefined';
 }
+
 function isNull(target) {
     return target === null;
 }
+
 function isWindow(target) {
     return target instanceof Window;
 }
+
 function isDocument(target) {
     return target instanceof Document;
 }
+
 function isElement(target) {
     return target instanceof Element;
 }
+
 function isNode(target) {
     return target instanceof Node;
 }
@@ -40,15 +49,18 @@ function isIE() {
     // @ts-ignore
     return !!window.document.documentMode;
 }
+
 function isArrayLike(target) {
     if (isFunction(target) || isWindow(target)) {
         return false;
     }
     return isNumber(target.length);
 }
+
 function isObjectLike(target) {
     return typeof target === 'object' && target !== null;
 }
+
 function toElement(target) {
     return isDocument(target) ? target.documentElement : target;
 }
@@ -166,8 +178,7 @@ function each(target, callback) {
                 return target;
             }
         }
-    }
-    else {
+    } else {
         const keys = Object.keys(target);
         for (let i = 0; i < keys.length; i += 1) {
             if (callback.call(target[keys[i]], keys[i], target[keys[i]]) === false) {
@@ -197,7 +208,7 @@ class JQ {
 }
 
 function get$() {
-    const $ = function (selector) {
+    const $ = function(selector) {
         if (!selector) {
             return new JQ();
         }
@@ -210,8 +221,7 @@ function get$() {
             if (/complete|loaded|interactive/.test(document.readyState) &&
                 document.body) {
                 selector.call(document, $);
-            }
-            else {
+            } else {
                 document.addEventListener('DOMContentLoaded', () => selector.call(document, $), false);
             }
             return new JQ([document]);
@@ -267,7 +277,7 @@ const mdui = {
     $: $,
 };
 
-$.fn.each = function (callback) {
+$.fn.each = function(callback) {
     return each(this, callback);
 };
 
@@ -303,13 +313,13 @@ function merge(first, second) {
     return first;
 }
 
-$.fn.get = function (index) {
-    return index === undefined
-        ? [].slice.call(this)
-        : this[index >= 0 ? index : index + this.length];
+$.fn.get = function(index) {
+    return index === undefined ?
+        [].slice.call(this) :
+        this[index >= 0 ? index : index + this.length];
 };
 
-$.fn.find = function (selector) {
+$.fn.find = function(selector) {
     const foundElements = [];
     this.each((_, element) => {
         merge(foundElements, $(element.querySelectorAll(selector)).get());
@@ -388,16 +398,18 @@ function add(element, types, func, data, selector) {
             return;
         }
         const event = parse(type);
+
         function callFn(e, elem) {
             // 因为鼠标事件模拟事件的 detail 属性是只读的，因此在 e._detail 中存储参数
-            const result = func.apply(elem, 
-            // @ts-ignore
-            e._detail === undefined ? [e] : [e].concat(e._detail));
+            const result = func.apply(elem,
+                // @ts-ignore
+                e._detail === undefined ? [e] : [e].concat(e._detail));
             if (result === false) {
                 e.preventDefault();
                 e.stopPropagation();
             }
         }
+
         function proxyFn(e) {
             // @ts-ignore
             if (e._ns && !matcherFor(e._ns).test(event.ns)) {
@@ -412,13 +424,12 @@ function add(element, types, func, data, selector) {
                     .get()
                     .reverse()
                     .forEach((elem) => {
-                    if (elem === e.target ||
-                        contains(elem, e.target)) {
-                        callFn(e, elem);
-                    }
-                });
-            }
-            else {
+                        if (elem === e.target ||
+                            contains(elem, e.target)) {
+                            callFn(e, elem);
+                        }
+                    });
+            } else {
                 // 不使用事件代理
                 callFn(e, element);
             }
@@ -450,8 +461,7 @@ function remove(element, types, func, selector) {
     };
     if (!types) {
         handlersInElement.forEach((handler) => removeEvent(handler));
-    }
-    else {
+    } else {
         types.split(' ').forEach((type) => {
             if (type) {
                 getHandlers(element, type, func, selector).forEach((handler) => removeEvent(handler));
@@ -460,7 +470,7 @@ function remove(element, types, func, selector) {
     }
 }
 
-$.fn.trigger = function (type, extraParameters) {
+$.fn.trigger = function(type, extraParameters) {
     const event = parse(type);
     let eventObject;
     const eventParams = {
@@ -471,8 +481,7 @@ $.fn.trigger = function (type, extraParameters) {
     if (isMouseEvent) {
         // Note: MouseEvent 无法传入 detail 参数
         eventObject = new MouseEvent(event.type, eventParams);
-    }
-    else {
+    } else {
         eventParams.detail = extraParameters;
         eventObject = new CustomEvent(event.type, eventParams);
     }
@@ -480,7 +489,7 @@ $.fn.trigger = function (type, extraParameters) {
     eventObject._detail = extraParameters;
     // @ts-ignore
     eventObject._ns = event.ns;
-    return this.each(function () {
+    return this.each(function() {
         this.dispatchEvent(eventObject);
     });
 };
@@ -531,35 +540,32 @@ function param(obj) {
         return '';
     }
     const args = [];
+
     function destructure(key, value) {
         let keyTmp;
         if (isObjectLike(value)) {
             each(value, (i, v) => {
                 if (Array.isArray(value) && !isObjectLike(v)) {
                     keyTmp = '';
-                }
-                else {
+                } else {
                     keyTmp = i;
                 }
                 destructure(`${key}[${keyTmp}]`, v);
             });
-        }
-        else {
+        } else {
             if (value == null || value === '') {
                 keyTmp = '=';
-            }
-            else {
+            } else {
                 keyTmp = `=${encodeURIComponent(value)}`;
             }
             args.push(encodeURIComponent(key) + keyTmp);
         }
     }
     if (Array.isArray(obj)) {
-        each(obj, function () {
+        each(obj, function() {
             destructure(this.name, this.value);
         });
-    }
-    else {
+    } else {
         each(obj, destructure);
     }
     return args.join('&');
@@ -758,7 +764,7 @@ function ajax(options) {
             eventParams.xhr = xhr;
             eventParams.options = mergedOptions;
             let xhrTimeout;
-            xhr.onload = function () {
+            xhr.onload = function() {
                 if (xhrTimeout) {
                     clearTimeout(xhrTimeout);
                 }
@@ -770,11 +776,9 @@ function ajax(options) {
                 if (isHttpStatusSuccess) {
                     if (xhr.status === 204 || method === 'HEAD') {
                         textStatus = 'nocontent';
-                    }
-                    else if (xhr.status === 304) {
+                    } else if (xhr.status === 304) {
                         textStatus = 'notmodified';
-                    }
-                    else {
+                    } else {
                         textStatus = 'success';
                     }
                     if (dataType === 'json') {
@@ -782,8 +786,7 @@ function ajax(options) {
                             responseData =
                                 method === 'HEAD' ? undefined : JSON.parse(xhr.responseText);
                             eventParams.data = responseData;
-                        }
-                        catch (err) {
+                        } catch (err) {
                             textStatus = 'parsererror';
                             trigger(ajaxEvents.ajaxError, eventParams, 'error', xhr, textStatus);
                             reject(new Error(textStatus));
@@ -792,20 +795,18 @@ function ajax(options) {
                             trigger(ajaxEvents.ajaxSuccess, eventParams, 'success', responseData, textStatus, xhr);
                             resolve(responseData);
                         }
-                    }
-                    else {
+                    } else {
                         responseData =
-                            method === 'HEAD'
-                                ? undefined
-                                : xhr.responseType === 'text' || xhr.responseType === ''
-                                    ? xhr.responseText
-                                    : xhr.response;
+                            method === 'HEAD' ?
+                            undefined :
+                            xhr.responseType === 'text' || xhr.responseType === '' ?
+                            xhr.responseText :
+                            xhr.response;
                         eventParams.data = responseData;
                         trigger(ajaxEvents.ajaxSuccess, eventParams, 'success', responseData, textStatus, xhr);
                         resolve(responseData);
                     }
-                }
-                else {
+                } else {
                     textStatus = 'error';
                     trigger(ajaxEvents.ajaxError, eventParams, 'error', xhr, textStatus);
                     reject(new Error(textStatus));
@@ -815,15 +816,14 @@ function ajax(options) {
                     if (func && func[xhr.status]) {
                         if (isHttpStatusSuccess) {
                             func[xhr.status](responseData, textStatus, xhr);
-                        }
-                        else {
+                        } else {
                             func[xhr.status](xhr, textStatus);
                         }
                     }
                 });
                 trigger(ajaxEvents.ajaxComplete, eventParams, 'complete', xhr, textStatus);
             };
-            xhr.onerror = function () {
+            xhr.onerror = function() {
                 if (xhrTimeout) {
                     clearTimeout(xhrTimeout);
                 }
@@ -831,7 +831,7 @@ function ajax(options) {
                 trigger(ajaxEvents.ajaxComplete, eventParams, 'complete', xhr, 'error');
                 reject(new Error(xhr.statusText));
             };
-            xhr.onabort = function () {
+            xhr.onabort = function() {
                 let statusText = 'abort';
                 if (xhrTimeout) {
                     statusText = 'timeout';
@@ -899,6 +899,7 @@ function setObjectToElement(element, object) {
         element[dataNS][toCamelCase(key)] = value;
     });
 }
+
 function data(element, key, value) {
     // 根据键值对设置值
     // data(element, { 'key' : 'value' })
@@ -909,7 +910,9 @@ function data(element, key, value) {
     // 根据 key、value 设置值
     // data(element, 'key', 'value')
     if (!isUndefined(value)) {
-        setObjectToElement(element, { [key]: value });
+        setObjectToElement(element, {
+            [key]: value
+        });
         return value;
     }
     // 获取所有值
@@ -933,7 +936,7 @@ $.data = data;
 
 $.each = each;
 
-$.extend = function (...objectN) {
+$.extend = function(...objectN) {
     if (objectN.length === 1) {
         each(objectN[0], (prop, value) => {
             this[prop] = value;
@@ -1012,14 +1015,12 @@ function removeData(element, name) {
         // @ts-ignore
         delete element[dataNS];
         // @ts-ignore
-    }
-    else if (isString(name)) {
+    } else if (isString(name)) {
         name
             .split(' ')
             .filter((nameItem) => nameItem)
             .forEach((nameItem) => remove(nameItem));
-    }
-    else {
+    } else {
         each(name, (_, nameItem) => remove(nameItem));
     }
 }
@@ -1047,12 +1048,12 @@ function unique(arr) {
 
 $.unique = unique;
 
-$.fn.add = function (selector) {
+$.fn.add = function(selector) {
     return new JQ(unique(merge(this.get(), $(selector).get())));
 };
 
 each(['add', 'remove', 'toggle'], (_, name) => {
-    $.fn[`${name}Class`] = function (className) {
+    $.fn[`${name}Class`] = function(className) {
         if (name === 'remove' && !arguments.length) {
             return this.each((_, element) => {
                 element.setAttribute('class', '');
@@ -1062,9 +1063,9 @@ each(['add', 'remove', 'toggle'], (_, name) => {
             if (!isElement(element)) {
                 return;
             }
-            const classes = (isFunction(className)
-                ? className.call(element, i, element.getAttribute('class') || '')
-                : className)
+            const classes = (isFunction(className) ?
+                    className.call(element, i, element.getAttribute('class') || '') :
+                    className)
                 .split(' ')
                 .filter((name) => name);
             each(classes, (_, cls) => {
@@ -1075,7 +1076,7 @@ each(['add', 'remove', 'toggle'], (_, name) => {
 });
 
 each(['insertBefore', 'insertAfter'], (nameIndex, name) => {
-    $.fn[name] = function (target) {
+    $.fn[name] = function(target) {
         const $element = nameIndex ? $(this.get().reverse()) : this; // 顺序和 jQuery 保持一致
         const $target = $(target);
         const result = [];
@@ -1084,9 +1085,9 @@ each(['insertBefore', 'insertAfter'], (nameIndex, name) => {
                 return;
             }
             $element.each((_, element) => {
-                const newItem = index
-                    ? element.cloneNode(true)
-                    : element;
+                const newItem = index ?
+                    element.cloneNode(true) :
+                    element;
                 const existingItem = nameIndex ? target.nextSibling : target;
                 result.push(newItem);
                 target.parentNode.insertBefore(newItem, existingItem);
@@ -1104,24 +1105,22 @@ function isPlainText(target) {
     return (isString(target) && (target[0] !== '<' || target[target.length - 1] !== '>'));
 }
 each(['before', 'after'], (nameIndex, name) => {
-    $.fn[name] = function (...args) {
+    $.fn[name] = function(...args) {
         // after 方法，多个参数需要按参数顺序添加到元素后面，所以需要将参数顺序反向处理
         if (nameIndex === 1) {
             args = args.reverse();
         }
         return this.each((index, element) => {
-            const targets = isFunction(args[0])
-                ? [args[0].call(element, index, element.innerHTML)]
-                : args;
+            const targets = isFunction(args[0]) ?
+                [args[0].call(element, index, element.innerHTML)] :
+                args;
             each(targets, (_, target) => {
                 let $target;
                 if (isPlainText(target)) {
                     $target = $(getChildNodesArray(target, 'div'));
-                }
-                else if (index && isElement(target)) {
+                } else if (index && isElement(target)) {
                     $target = $(target.cloneNode(true));
-                }
-                else {
+                } else {
                     $target = $(target);
                 }
                 $target[nameIndex ? 'insertAfter' : 'insertBefore'](element);
@@ -1130,7 +1129,7 @@ each(['before', 'after'], (nameIndex, name) => {
     };
 });
 
-$.fn.off = function (types, selector, callback) {
+$.fn.off = function(types, selector, callback) {
     // types 是对象
     if (isObjectLike(types)) {
         each(types, (type, fn) => {
@@ -1150,12 +1149,12 @@ $.fn.off = function (types, selector, callback) {
     if (callback === false) {
         callback = returnFalse;
     }
-    return this.each(function () {
+    return this.each(function() {
         remove(this, types, callback, selector);
     });
 };
 
-$.fn.on = function (types, selector, data, callback, one) {
+$.fn.on = function(types, selector, data, callback, one) {
     // types 可以是 type/func 对象
     if (isObjectLike(types)) {
         // (types-Object, selector, data)
@@ -1175,14 +1174,12 @@ $.fn.on = function (types, selector, data, callback, one) {
         // (types, fn)
         callback = selector;
         data = selector = undefined;
-    }
-    else if (callback == null) {
+    } else if (callback == null) {
         if (isString(selector)) {
             // (types, selector, fn)
             callback = data;
             data = undefined;
-        }
-        else {
+        } else {
             // (types, data, fn)
             callback = data;
             data = selector;
@@ -1191,8 +1188,7 @@ $.fn.on = function (types, selector, data, callback, one) {
     }
     if (callback === false) {
         callback = returnFalse;
-    }
-    else if (!callback) {
+    } else if (!callback) {
         return this;
     }
     // $().one()
@@ -1200,36 +1196,36 @@ $.fn.on = function (types, selector, data, callback, one) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const _this = this;
         const origCallback = callback;
-        callback = function (event) {
+        callback = function(event) {
             _this.off(event.type, selector, callback);
             // eslint-disable-next-line prefer-rest-params
             return origCallback.apply(this, arguments);
         };
     }
-    return this.each(function () {
+    return this.each(function() {
         add(this, types, callback, data, selector);
     });
 };
 
 each(ajaxEvents, (name, eventName) => {
-    $.fn[name] = function (fn) {
+    $.fn[name] = function(fn) {
         return this.on(eventName, (e, params) => {
             fn(e, params.xhr, params.options, params.data);
         });
     };
 });
 
-$.fn.map = function (callback) {
+$.fn.map = function(callback) {
     return new JQ(map(this, (element, i) => callback.call(element, i, element)));
 };
 
-$.fn.clone = function () {
-    return this.map(function () {
+$.fn.clone = function() {
+    return this.map(function() {
         return this.cloneNode(true);
     });
 };
 
-$.fn.is = function (selector) {
+$.fn.is = function(selector) {
     let isMatched = false;
     if (isFunction(selector)) {
         this.each((index, element) => {
@@ -1263,7 +1259,7 @@ $.fn.is = function (selector) {
     return isMatched;
 };
 
-$.fn.remove = function (selector) {
+$.fn.remove = function(selector) {
     return this.each((_, element) => {
         if (element.parentNode && (!selector || $(element).is(selector))) {
             element.parentNode.removeChild(element);
@@ -1272,19 +1268,19 @@ $.fn.remove = function (selector) {
 };
 
 each(['prepend', 'append'], (nameIndex, name) => {
-    $.fn[name] = function (...args) {
+    $.fn[name] = function(...args) {
         return this.each((index, element) => {
             const childNodes = element.childNodes;
             const childLength = childNodes.length;
-            const child = childLength
-                ? childNodes[nameIndex ? childLength - 1 : 0]
-                : document.createElement('div');
+            const child = childLength ?
+                childNodes[nameIndex ? childLength - 1 : 0] :
+                document.createElement('div');
             if (!childLength) {
                 element.appendChild(child);
             }
-            let contents = isFunction(args[0])
-                ? [args[0].call(element, index, element.innerHTML)]
-                : args;
+            let contents = isFunction(args[0]) ?
+                [args[0].call(element, index, element.innerHTML)] :
+                args;
             // 如果不是字符串，则仅第一个元素使用原始元素，其他的都克隆自第一个元素
             if (index) {
                 contents = contents.map((content) => {
@@ -1300,7 +1296,7 @@ each(['prepend', 'append'], (nameIndex, name) => {
 });
 
 each(['appendTo', 'prependTo'], (nameIndex, name) => {
-    $.fn[name] = function (target) {
+    $.fn[name] = function(target) {
         const extraChilds = [];
         const $target = $(target).map((_, element) => {
             const childNodes = element.childNodes;
@@ -1330,26 +1326,26 @@ each(['attr', 'prop', 'css'], (nameIndex, name) => {
             case 0:
                 if (isNull(value)) {
                     element.removeAttribute(key);
-                }
-                else {
+                } else {
                     element.setAttribute(key, value);
                 }
                 break;
-            // prop
+                // prop
             case 1:
                 // @ts-ignore
                 element[key] = value;
                 break;
-            // css
+                // css
             default:
                 key = toCamelCase(key);
                 // @ts-ignore
-                element.style[key] = isNumber(value)
-                    ? `${value}${cssNumber.indexOf(key) > -1 ? '' : 'px'}`
-                    : value;
+                element.style[key] = isNumber(value) ?
+                    `${value}${cssNumber.indexOf(key) > -1 ? '' : 'px'}` :
+                    value;
                 break;
         }
     }
+
     function get(element, key) {
         switch (nameIndex) {
             // attr
@@ -1357,16 +1353,16 @@ each(['attr', 'prop', 'css'], (nameIndex, name) => {
                 // 属性不存在时，原生 getAttribute 方法返回 null，而 jquery 返回 undefined。这里和 jquery 保持一致
                 const value = element.getAttribute(key);
                 return isNull(value) ? undefined : value;
-            // prop
+                // prop
             case 1:
                 // @ts-ignore
                 return element[key];
-            // css
+                // css
             default:
                 return getStyle(element, key);
         }
     }
-    $.fn[name] = function (key, value) {
+    $.fn[name] = function(key, value) {
         if (isObjectLike(key)) {
             each(key, (k, v) => {
                 // @ts-ignore
@@ -1384,7 +1380,7 @@ each(['attr', 'prop', 'css'], (nameIndex, name) => {
     };
 });
 
-$.fn.children = function (selector) {
+$.fn.children = function(selector) {
     const children = [];
     this.each((_, element) => {
         each(element.childNodes, (__, childNode) => {
@@ -1399,11 +1395,11 @@ $.fn.children = function (selector) {
     return new JQ(unique(children));
 };
 
-$.fn.slice = function (...args) {
+$.fn.slice = function(...args) {
     return new JQ([].slice.apply(this, args));
 };
 
-$.fn.eq = function (index) {
+$.fn.eq = function(index) {
     const ret = index === -1 ? this.slice(index) : this.slice(index, +index + 1);
     return new JQ(ret);
 };
@@ -1445,14 +1441,14 @@ function dir($elements, nameIndex, node, selector, filter) {
 }
 
 each(['', 's', 'sUntil'], (nameIndex, name) => {
-    $.fn[`parent${name}`] = function (selector, filter) {
+    $.fn[`parent${name}`] = function(selector, filter) {
         // parents、parentsUntil 需要把元素的顺序反向处理，以便和 jQuery 的结果一致
         const $nodes = !nameIndex ? this : $(this.get().reverse());
         return dir($nodes, nameIndex, 'parentNode', selector, filter);
     };
 });
 
-$.fn.closest = function (selector) {
+$.fn.closest = function(selector) {
     if (this.is(selector)) {
         return this;
     }
@@ -1494,16 +1490,14 @@ function dataAttr(element, key, value) {
         if (isString(value)) {
             try {
                 value = getData(value);
-            }
-            catch (e) { }
-        }
-        else {
+            } catch (e) {}
+        } else {
             value = undefined;
         }
     }
     return value;
 }
-$.fn.data = function (key, value) {
+$.fn.data = function(key, value) {
     // 获取所有值
     if (isUndefined(key)) {
         if (!this.length) {
@@ -1531,7 +1525,7 @@ $.fn.data = function (key, value) {
     }
     // 同时设置多个值
     if (isObjectLike(key)) {
-        return this.each(function () {
+        return this.each(function() {
             data(this, key);
         });
     }
@@ -1541,7 +1535,7 @@ $.fn.data = function (key, value) {
     }
     // 设置值
     if (!isUndefined(value)) {
-        return this.each(function () {
+        return this.each(function() {
             data(this, key, value);
         });
     }
@@ -1552,13 +1546,13 @@ $.fn.data = function (key, value) {
     return dataAttr(this[0], key, data(this[0], key));
 };
 
-$.fn.empty = function () {
-    return this.each(function () {
+$.fn.empty = function() {
+    return this.each(function() {
         this.innerHTML = '';
     });
 };
 
-$.fn.extend = function (obj) {
+$.fn.extend = function(obj) {
     each(obj, (prop, value) => {
         // 在 JQ 对象上扩展方法时，需要自己添加 typescript 的类型定义
         $.fn[prop] = value;
@@ -1566,7 +1560,7 @@ $.fn.extend = function (obj) {
     return this;
 };
 
-$.fn.filter = function (selector) {
+$.fn.filter = function(selector) {
     if (isFunction(selector)) {
         return this.map((index, element) => selector.call(element, index, element) ? element : undefined);
     }
@@ -1577,14 +1571,16 @@ $.fn.filter = function (selector) {
     return this.map((_, element) => $selector.get().indexOf(element) > -1 ? element : undefined);
 };
 
-$.fn.first = function () {
+$.fn.first = function() {
     return this.eq(0);
 };
 
-$.fn.has = function (selector) {
+$.fn.has = function(selector) {
     const $targets = isString(selector) ? this.find(selector) : $(selector);
-    const { length } = $targets;
-    return this.map(function () {
+    const {
+        length
+    } = $targets;
+    return this.map(function() {
         for (let i = 0; i < length; i += 1) {
             if (contains(this, $targets[i])) {
                 return this;
@@ -1594,7 +1590,7 @@ $.fn.has = function (selector) {
     });
 };
 
-$.fn.hasClass = function (className) {
+$.fn.hasClass = function(className) {
     return this[0].classList.contains(className);
 };
 
@@ -1630,8 +1626,7 @@ function handleExtraWidth(element, name, value, funcIndex, includeMargin, multip
             value -= getExtraWidthValue('border');
             value -= getExtraWidthValue('padding');
         }
-    }
-    else {
+    } else {
         if (funcIndex === 0) {
             value += getExtraWidthValue('padding');
         }
@@ -1657,18 +1652,18 @@ function get(element, name, funcIndex, includeMargin) {
     // $(window).width()
     if (isWindow(element)) {
         // outerWidth, outerHeight 需要包含滚动条的宽度
-        return funcIndex === 2
-            ? element[innerProp]
-            : toElement(document)[clientProp];
+        return funcIndex === 2 ?
+            element[innerProp] :
+            toElement(document)[clientProp];
     }
     // $(document).width()
     if (isDocument(element)) {
         const doc = toElement(element);
         return Math.max(
-        // @ts-ignore
-        element.body[scrollProp], doc[scrollProp], 
-        // @ts-ignore
-        element.body[offsetProp], doc[offsetProp], doc[clientProp]);
+            // @ts-ignore
+            element.body[scrollProp], doc[scrollProp],
+            // @ts-ignore
+            element.body[offsetProp], doc[offsetProp], doc[clientProp]);
     }
     const value = parseFloat(getComputedStyleValue(element, name.toLowerCase()) || '0');
     return handleExtraWidth(element, name, value, funcIndex, includeMargin, 1);
@@ -1683,9 +1678,9 @@ function get(element, name, funcIndex, includeMargin) {
  * @param value
  */
 function set(element, elementIndex, name, funcIndex, includeMargin, value) {
-    let computedValue = isFunction(value)
-        ? value.call(element, elementIndex, get(element, name, funcIndex, includeMargin))
-        : value;
+    let computedValue = isFunction(value) ?
+        value.call(element, elementIndex, get(element, name, funcIndex, includeMargin)) :
+        value;
     if (computedValue == null) {
         return;
     }
@@ -1701,20 +1696,20 @@ function set(element, elementIndex, name, funcIndex, includeMargin, value) {
     const numerical = parseFloat(computedValue);
     computedValue =
         handleExtraWidth(element, name, numerical, funcIndex, includeMargin, -1) +
-            (suffix || 'px');
+        (suffix || 'px');
     $element.css(dimension, computedValue);
 }
 each(['Width', 'Height'], (_, name) => {
     each([`inner${name}`, name.toLowerCase(), `outer${name}`], (funcIndex, funcName) => {
-        $.fn[funcName] = function (margin, value) {
+        $.fn[funcName] = function(margin, value) {
             // 是否是赋值操作
             const isSet = arguments.length && (funcIndex < 2 || !isBoolean(margin));
             const includeMargin = margin === true || value === true;
             // 获取第一个元素的值
             if (!isSet) {
-                return this.length
-                    ? get(this[0], name, funcIndex, includeMargin)
-                    : undefined;
+                return this.length ?
+                    get(this[0], name, funcIndex, includeMargin) :
+                    undefined;
             }
             // 设置每个元素的值
             return this.each((index, element) => set(element, index, name, funcIndex, includeMargin, margin));
@@ -1722,8 +1717,8 @@ each(['Width', 'Height'], (_, name) => {
     });
 });
 
-$.fn.hide = function () {
-    return this.each(function () {
+$.fn.hide = function() {
+    return this.each(function() {
         this.style.display = 'none';
     });
 };
@@ -1735,6 +1730,7 @@ each(['val', 'html', 'text'], (nameIndex, name) => {
         2: 'textContent',
     };
     const propName = props[nameIndex];
+
     function get($elements) {
         // text() 获取所有元素的文本
         if (nameIndex === 2) {
@@ -1754,6 +1750,7 @@ each(['val', 'html', 'text'], (nameIndex, name) => {
         // @ts-ignore
         return firstElement[propName];
     }
+
     function set(element, value) {
         // text() 和 html() 赋值为 undefined，则保持原内容不变
         // val() 赋值为 undefined 则赋值为空
@@ -1769,38 +1766,37 @@ each(['val', 'html', 'text'], (nameIndex, name) => {
         // @ts-ignore
         element[propName] = value;
     }
-    $.fn[name] = function (value) {
+    $.fn[name] = function(value) {
         // 获取值
         if (!arguments.length) {
             return get(this);
         }
         // 设置值
         return this.each((i, element) => {
-            const computedValue = isFunction(value)
-                ? value.call(element, i, get($(element)))
-                : value;
+            const computedValue = isFunction(value) ?
+                value.call(element, i, get($(element))) :
+                value;
             // value 是数组，则选中数组中的元素，反选不在数组中的元素
             if (nameIndex === 0 && Array.isArray(computedValue)) {
                 // select[multiple]
                 if ($(element).is('select[multiple]')) {
                     map($(element).find('option'), (option) => (option.selected =
                         computedValue.indexOf(option.value) >
-                            -1));
+                        -1));
                 }
                 // 其他 checkbox, radio 等元素
                 else {
                     element.checked =
                         computedValue.indexOf(element.value) > -1;
                 }
-            }
-            else {
+            } else {
                 set(element, computedValue);
             }
         });
     };
 });
 
-$.fn.index = function (selector) {
+$.fn.index = function(selector) {
     if (!arguments.length) {
         return this.eq(0).parent().children().get().indexOf(this[0]);
     }
@@ -1810,17 +1806,17 @@ $.fn.index = function (selector) {
     return this.get().indexOf($(selector)[0]);
 };
 
-$.fn.last = function () {
+$.fn.last = function() {
     return this.eq(-1);
 };
 
 each(['', 'All', 'Until'], (nameIndex, name) => {
-    $.fn[`next${name}`] = function (selector, filter) {
+    $.fn[`next${name}`] = function(selector, filter) {
         return dir(this, nameIndex, 'nextElementSibling', selector, filter);
     };
 });
 
-$.fn.not = function (selector) {
+$.fn.not = function(selector) {
     const $excludes = this.filter(selector);
     return this.map((_, element) => $excludes.index(element) > -1 ? undefined : element);
 };
@@ -1828,8 +1824,8 @@ $.fn.not = function (selector) {
 /**
  * 返回最近的用于定位的父元素
  */
-$.fn.offsetParent = function () {
-    return this.map(function () {
+$.fn.offsetParent = function() {
+    return this.map(function() {
         let offsetParent = this.offsetParent;
         while (offsetParent && $(offsetParent).css('position') === 'static') {
             offsetParent = offsetParent.offsetParent;
@@ -1841,7 +1837,7 @@ $.fn.offsetParent = function () {
 function floatStyle($element, name) {
     return parseFloat($element.css(name));
 }
-$.fn.position = function () {
+$.fn.position = function() {
     if (!this.length) {
         return undefined;
     }
@@ -1853,8 +1849,7 @@ $.fn.position = function () {
     };
     if ($element.css('position') === 'fixed') {
         currentOffset = $element[0].getBoundingClientRect();
-    }
-    else {
+    } else {
         currentOffset = $element.offset();
         const $offsetParent = $element.offsetParent();
         parentOffset = $offsetParent.offset();
@@ -1871,7 +1866,10 @@ $.fn.position = function () {
 
 function get$1(element) {
     if (!element.getClientRects().length) {
-        return { top: 0, left: 0 };
+        return {
+            top: 0,
+            left: 0
+        };
     }
     const rect = element.getBoundingClientRect();
     const win = element.ownerDocument.defaultView;
@@ -1880,6 +1878,7 @@ function get$1(element) {
         left: rect.left + win.pageXOffset,
     };
 }
+
 function set$1(element, value, index) {
     const $element = $(element);
     const position = $element.css('position');
@@ -1897,24 +1896,23 @@ function set$1(element, value, index) {
         const currentPosition = $element.position();
         currentTop = currentPosition.top;
         currentLeft = currentPosition.left;
-    }
-    else {
+    } else {
         currentTop = parseFloat(currentTopString);
         currentLeft = parseFloat(currentLeftString);
     }
-    const computedValue = isFunction(value)
-        ? value.call(element, index, extend({}, currentOffset))
-        : value;
+    const computedValue = isFunction(value) ?
+        value.call(element, index, extend({}, currentOffset)) :
+        value;
     $element.css({
-        top: computedValue.top != null
-            ? computedValue.top - currentOffset.top + currentTop
-            : undefined,
-        left: computedValue.left != null
-            ? computedValue.left - currentOffset.left + currentLeft
-            : undefined,
+        top: computedValue.top != null ?
+            computedValue.top - currentOffset.top + currentTop :
+            undefined,
+        left: computedValue.left != null ?
+            computedValue.left - currentOffset.left + currentLeft :
+            undefined,
     });
 }
-$.fn.offset = function (value) {
+$.fn.offset = function(value) {
     // 获取坐标
     if (!arguments.length) {
         if (!this.length) {
@@ -1923,56 +1921,54 @@ $.fn.offset = function (value) {
         return get$1(this[0]);
     }
     // 设置坐标
-    return this.each(function (index) {
+    return this.each(function(index) {
         set$1(this, value, index);
     });
 };
 
-$.fn.one = function (types, selector, data, callback) {
+$.fn.one = function(types, selector, data, callback) {
     // @ts-ignore
     return this.on(types, selector, data, callback, true);
 };
 
 each(['', 'All', 'Until'], (nameIndex, name) => {
-    $.fn[`prev${name}`] = function (selector, filter) {
+    $.fn[`prev${name}`] = function(selector, filter) {
         // prevAll、prevUntil 需要把元素的顺序倒序处理，以便和 jQuery 的结果一致
         const $nodes = !nameIndex ? this : $(this.get().reverse());
         return dir($nodes, nameIndex, 'previousElementSibling', selector, filter);
     };
 });
 
-$.fn.removeAttr = function (attributeName) {
+$.fn.removeAttr = function(attributeName) {
     const names = attributeName.split(' ').filter((name) => name);
-    return this.each(function () {
+    return this.each(function() {
         each(names, (_, name) => {
             this.removeAttribute(name);
         });
     });
 };
 
-$.fn.removeData = function (name) {
-    return this.each(function () {
+$.fn.removeData = function(name) {
+    return this.each(function() {
         removeData(this, name);
     });
 };
 
-$.fn.removeProp = function (name) {
-    return this.each(function () {
+$.fn.removeProp = function(name) {
+    return this.each(function() {
         try {
             // @ts-ignore
             delete this[name];
-        }
-        catch (e) { }
+        } catch (e) {}
     });
 };
 
-$.fn.replaceWith = function (newContent) {
+$.fn.replaceWith = function(newContent) {
     this.each((index, element) => {
         let content = newContent;
         if (isFunction(content)) {
             content = content.call(element, index, element.innerHTML);
-        }
-        else if (index && !isString(content)) {
+        } else if (index && !isString(content)) {
             content = $(content).clone();
         }
         $(element).before(content);
@@ -1980,7 +1976,7 @@ $.fn.replaceWith = function (newContent) {
     return this.remove();
 };
 
-$.fn.replaceAll = function (target) {
+$.fn.replaceAll = function(target) {
     return $(target).map((index, element) => {
         $(element).replaceWith(index ? this.clone() : this);
         return this.get();
@@ -1991,7 +1987,7 @@ $.fn.replaceAll = function (target) {
  * 将表单元素的值组合成键值对数组
  * @returns {Array}
  */
-$.fn.serializeArray = function () {
+$.fn.serializeArray = function() {
     const result = [];
     this.each((_, element) => {
         const elements = element instanceof HTMLFormElement ? element.elements : [element];
@@ -2001,9 +1997,7 @@ $.fn.serializeArray = function () {
             const nodeName = element.nodeName.toLowerCase();
             if (nodeName !== 'fieldset' &&
                 element.name &&
-                !element.disabled &&
-                ['input', 'select', 'textarea', 'keygen'].indexOf(nodeName) > -1 &&
-                ['submit', 'button', 'image', 'reset', 'file'].indexOf(type) === -1 &&
+                !element.disabled && ['input', 'select', 'textarea', 'keygen'].indexOf(nodeName) > -1 && ['submit', 'button', 'image', 'reset', 'file'].indexOf(type) === -1 &&
                 (['radio', 'checkbox'].indexOf(type) === -1 ||
                     element.checked)) {
                 const value = $element.val();
@@ -2020,7 +2014,7 @@ $.fn.serializeArray = function () {
     return result;
 };
 
-$.fn.serialize = function () {
+$.fn.serialize = function() {
     return param(this.serializeArray());
 };
 
@@ -2048,8 +2042,8 @@ function defaultDisplay(nodeName) {
  * 显示指定元素
  * @returns {JQ}
  */
-$.fn.show = function () {
-    return this.each(function () {
+$.fn.show = function() {
+    return this.each(function() {
         if (this.style.display === 'none') {
             this.style.display = '';
         }
@@ -2064,39 +2058,40 @@ $.fn.show = function () {
  * @param selector {String=}
  * @returns {JQ}
  */
-$.fn.siblings = function (selector) {
+$.fn.siblings = function(selector) {
     return this.prevAll(selector).add(this.nextAll(selector));
 };
 
 /**
  * 切换元素的显示状态
  */
-$.fn.toggle = function () {
-    return this.each(function () {
+$.fn.toggle = function() {
+    return this.each(function() {
         getStyle(this, 'display') === 'none' ? $(this).show() : $(this).hide();
     });
 };
 
-$.fn.reflow = function () {
-    return this.each(function () {
+$.fn.reflow = function() {
+    return this.each(function() {
         return this.clientLeft;
     });
 };
 
-$.fn.transition = function (duration) {
+$.fn.transition = function(duration) {
     if (isNumber(duration)) {
         duration = `${duration}ms`;
     }
-    return this.each(function () {
+    return this.each(function() {
         this.style.webkitTransitionDuration = duration;
         this.style.transitionDuration = duration;
     });
 };
 
-$.fn.transitionEnd = function (callback) {
+$.fn.transitionEnd = function(callback) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
     const events = ['webkitTransitionEnd', 'transitionend'];
+
     function fireCallback(e) {
         if (e.target !== this) {
             return;
@@ -2113,15 +2108,15 @@ $.fn.transitionEnd = function (callback) {
     return this;
 };
 
-$.fn.transformOrigin = function (transformOrigin) {
-    return this.each(function () {
+$.fn.transformOrigin = function(transformOrigin) {
+    return this.each(function() {
         this.style.webkitTransformOrigin = transformOrigin;
         this.style.transformOrigin = transformOrigin;
     });
 };
 
-$.fn.transform = function (transform) {
-    return this.each(function () {
+$.fn.transform = function(transform) {
+    return this.each(function() {
         this.style.webkitTransform = transform;
         this.style.transform = transform;
     });
@@ -2150,7 +2145,7 @@ function mutation(selector, apiInit, i, element) {
     }
 }
 
-$.fn.mutation = function () {
+$.fn.mutation = function() {
     return this.each((i, element) => {
         const $this = $(element);
         each(entries, (selector, apiInit) => {
@@ -2164,15 +2159,14 @@ $.fn.mutation = function () {
     });
 };
 
-$.showOverlay = function (zIndex) {
+$.showOverlay = function(zIndex) {
     let $overlay = $('.mdui-overlay');
     if ($overlay.length) {
         $overlay.data('_overlay_is_deleted', false);
         if (!isUndefined(zIndex)) {
             $overlay.css('z-index', zIndex);
         }
-    }
-    else {
+    } else {
         if (isUndefined(zIndex)) {
             zIndex = 2000;
         }
@@ -2185,7 +2179,7 @@ $.showOverlay = function (zIndex) {
     return $overlay.data('_overlay_level', ++level).addClass('mdui-overlay-show');
 };
 
-$.hideOverlay = function (force = false) {
+$.hideOverlay = function(force = false) {
     const $overlay = $('.mdui-overlay');
     if (!$overlay.length) {
         return;
@@ -2200,13 +2194,13 @@ $.hideOverlay = function (force = false) {
         .removeClass('mdui-overlay-show')
         .data('_overlay_is_deleted', true)
         .transitionEnd(() => {
-        if ($overlay.data('_overlay_is_deleted')) {
-            $overlay.remove();
-        }
-    });
+            if ($overlay.data('_overlay_is_deleted')) {
+                $overlay.remove();
+            }
+        });
 };
 
-$.lockScreen = function () {
+$.lockScreen = function() {
     const $body = $('body');
     // 不直接把 body 设为 box-sizing: border-box，避免污染全局样式
     const newBodyWidth = $body.width();
@@ -2217,7 +2211,7 @@ $.lockScreen = function () {
         .data('_lockscreen_level', ++level);
 };
 
-$.unlockScreen = function (force = false) {
+$.unlockScreen = function(force = false) {
     const $body = $('body');
     let level = force ? 1 : $body.data('_lockscreen_level');
     if (level > 1) {
@@ -2227,9 +2221,9 @@ $.unlockScreen = function (force = false) {
     $body.data('_lockscreen_level', 0).removeClass('mdui-locked').width('');
 };
 
-$.throttle = function (fn, delay = 16) {
+$.throttle = function(fn, delay = 16) {
     let timer = null;
-    return function (...args) {
+    return function(...args) {
         if (isNull(timer)) {
             timer = setTimeout(() => {
                 fn.apply(this, args);
@@ -2240,10 +2234,11 @@ $.throttle = function (fn, delay = 16) {
 };
 
 const GUID = {};
-$.guid = function (name) {
+$.guid = function(name) {
     if (!isUndefined(name) && !isUndefined(GUID[name])) {
         return GUID[name];
     }
+
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
             .toString(16)
@@ -2268,7 +2263,7 @@ $.guid = function (name) {
     return guid;
 };
 
-mdui.mutation = function (selector, apiInit) {
+mdui.mutation = function(selector, apiInit) {
     if (isUndefined(selector) || isUndefined(apiInit)) {
         $(document).mutation();
         return;
@@ -2371,8 +2366,7 @@ class Headroom {
                 currentScrollY >= this.options.offset &&
                 toleranceExceeded) {
                 this.unpin();
-            }
-            else if ((currentScrollY < this.lastScrollY && toleranceExceeded) ||
+            } else if ((currentScrollY < this.lastScrollY && toleranceExceeded) ||
                 currentScrollY <= this.options.offset) {
                 this.pin();
             }
@@ -2486,7 +2480,7 @@ function parseOptions(element, name) {
 
 const customAttr = 'mdui-headroom';
 $(() => {
-    mdui.mutation(`[${customAttr}]`, function () {
+    mdui.mutation(`[${customAttr}]`, function() {
         new mdui.Headroom(this, parseOptions(this, customAttr));
     });
 });
@@ -2517,7 +2511,7 @@ class CollapseAbstract {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
         // 点击 header 时，打开/关闭 item
-        this.$element.on('click', `.${this.classHeader}`, function () {
+        this.$element.on('click', `.${this.classHeader}`, function() {
             const $header = $(this);
             const $item = $header.parent();
             const $items = that.getItems();
@@ -2528,7 +2522,7 @@ class CollapseAbstract {
             });
         });
         // 点击关闭按钮时，关闭 item
-        this.$element.on('click', `[mdui-${this.getNamespace()}-item-close]`, function () {
+        this.$element.on('click', `[mdui-${this.getNamespace()}-item-close]`, function() {
             const $target = $(this);
             const $item = $target.parents(`.${that.classItem}`).first();
             that.close($item);
@@ -2574,8 +2568,7 @@ class CollapseAbstract {
         if (this.isOpen($item)) {
             $content.transition(0).height('auto').reflow().transition('');
             this.triggerEvent('opened', $item);
-        }
-        else {
+        } else {
             $content.height('');
             this.triggerEvent('closed', $item);
         }
@@ -2656,7 +2649,7 @@ mdui.Collapse = Collapse;
 
 const customAttr$1 = 'mdui-collapse';
 $(() => {
-    mdui.mutation(`[${customAttr$1}]`, function () {
+    mdui.mutation(`[${customAttr$1}]`, function() {
         new mdui.Collapse(this, parseOptions(this, customAttr$1));
     });
 });
@@ -2670,7 +2663,7 @@ mdui.Panel = Panel;
 
 const customAttr$2 = 'mdui-panel';
 $(() => {
-    mdui.mutation(`[${customAttr$2}]`, function () {
+    mdui.mutation(`[${customAttr$2}]`, function() {
         new mdui.Panel(this, parseOptions(this, customAttr$2));
     });
 });
@@ -2764,8 +2757,7 @@ class Table {
                 if ($checkbox[0].checked) {
                     $row.addClass(rowSelectedClass);
                     this.selectedRow++;
-                }
-                else {
+                } else {
                     $row.removeClass(rowSelectedClass);
                     this.selectedRow--;
                 }
@@ -2787,17 +2779,18 @@ class Table {
             .prependTo(this.$thRow)
             .find('input[type="checkbox"]')
             .on('change', () => {
-            const isCheckedAll = this.$thCheckbox[0].checked;
-            this.selectedRow = isCheckedAll ? this.$tdRows.length : 0;
-            this.$tdCheckboxs.each((_, checkbox) => {
-                checkbox.checked = isCheckedAll;
+                const isCheckedAll = this.$thCheckbox[0].checked;
+                this.selectedRow = isCheckedAll ? this.$tdRows.length : 0;
+                this.$tdCheckboxs.each((_, checkbox) => {
+                    checkbox.checked = isCheckedAll;
+                });
+                this.$tdRows.each((_, row) => {
+                    isCheckedAll
+                        ?
+                        $(row).addClass('mdui-table-row-selected') :
+                        $(row).removeClass('mdui-table-row-selected');
+                });
             });
-            this.$tdRows.each((_, row) => {
-                isCheckedAll
-                    ? $(row).addClass('mdui-table-row-selected')
-                    : $(row).removeClass('mdui-table-row-selected');
-            });
-        });
     }
     /**
      * 更新数值列
@@ -2809,30 +2802,30 @@ class Table {
             this.$tdRows.each((_, row) => {
                 const $td = $(row).find('td').eq(i);
                 isNumericCol
-                    ? $td.addClass(numericClass)
-                    : $td.removeClass(numericClass);
+                    ?
+                    $td.addClass(numericClass) :
+                    $td.removeClass(numericClass);
             });
         });
     }
 }
 const dataName = '_mdui_table';
 $(() => {
-    mdui.mutation('.mdui-table', function () {
+    mdui.mutation('.mdui-table', function() {
         const $element = $(this);
         if (!$element.data(dataName)) {
             $element.data(dataName, new Table($element));
         }
     });
 });
-mdui.updateTables = function (selector) {
+mdui.updateTables = function(selector) {
     const $elements = isUndefined(selector) ? $('.mdui-table') : $(selector);
     $elements.each((_, element) => {
         const $element = $(element);
         const instance = $element.data(dataName);
         if (instance) {
             instance.init();
-        }
-        else {
+        } else {
             $element.data(dataName, new Table($element));
         }
     });
@@ -2883,17 +2876,16 @@ let touches = 0;
  * @param event
  */
 function isAllow(event) {
-    return !(touches &&
-        [
-            'mousedown',
-            'mouseup',
-            'mousemove',
-            'click',
-            'mouseover',
-            'mouseout',
-            'mouseenter',
-            'mouseleave',
-        ].indexOf(event.type) > -1);
+    return !(touches && [
+        'mousedown',
+        'mouseup',
+        'mousemove',
+        'click',
+        'mouseover',
+        'mouseout',
+        'mouseenter',
+        'mouseleave',
+    ].indexOf(event.type) > -1);
 }
 /**
  * 在 touchstart 和 touchmove、touchend、touchcancel 事件中调用该方法注册事件
@@ -2903,10 +2895,9 @@ function register(event) {
     if (event.type === 'touchstart') {
         // 触发了 touch 事件
         touches += 1;
-    }
-    else if (['touchmove', 'touchend', 'touchcancel'].indexOf(event.type) > -1) {
+    } else if (['touchmove', 'touchend', 'touchcancel'].indexOf(event.type) > -1) {
         // touch 事件结束 500ms 后解除对鼠标事件的阻止
-        setTimeout(function () {
+        setTimeout(function() {
             if (touches) {
                 touches -= 1;
             }
@@ -2933,9 +2924,9 @@ function show(event, $ripple) {
     // 点击位置坐标
     const touchPosition = typeof TouchEvent !== 'undefined' &&
         event instanceof TouchEvent &&
-        event.touches.length
-        ? event.touches[0]
-        : event;
+        event.touches.length ?
+        event.touches[0] :
+        event;
     const touchStartX = touchPosition.pageX;
     const touchStartY = touchPosition.pageY;
     // 涟漪位置
@@ -2952,9 +2943,9 @@ function show(event, $ripple) {
         `${-center.y + height / 2}px, 0) scale(1)`;
     // 涟漪的 DOM 结构，并缓存动画效果
     $(`<div class="mdui-ripple-wave" ` +
-        `style="width:${diameter}px;height:${diameter}px;` +
-        `margin-top:-${diameter / 2}px;margin-left:-${diameter / 2}px;` +
-        `left:${center.x}px;top:${center.y}px;"></div>`)
+            `style="width:${diameter}px;height:${diameter}px;` +
+            `margin-top:-${diameter / 2}px;margin-left:-${diameter / 2}px;` +
+            `left:${center.x}px;top:${center.y}px;"></div>`)
         .data('_ripple_wave_translate', translate)
         .prependTo($ripple)
         .reflow()
@@ -2975,18 +2966,18 @@ function removeRipple($wave) {
         .addClass('mdui-ripple-wave-fill')
         .transform(translate.replace('scale(1)', 'scale(1.01)'))
         .transitionEnd(() => {
-        clearTimeout(removeTimer);
-        $wave
-            .addClass('mdui-ripple-wave-out')
-            .transform(translate.replace('scale(1)', 'scale(1.01)'));
-        removeTimer = setTimeout(() => $wave.remove(), 700);
-        setTimeout(() => {
-            $wave.transitionEnd(() => {
-                clearTimeout(removeTimer);
-                $wave.remove();
-            });
-        }, 0);
-    });
+            clearTimeout(removeTimer);
+            $wave
+                .addClass('mdui-ripple-wave-out')
+                .transform(translate.replace('scale(1)', 'scale(1.01)'));
+            removeTimer = setTimeout(() => $wave.remove(), 700);
+            setTimeout(() => {
+                $wave.transitionEnd(() => {
+                    clearTimeout(removeTimer);
+                    $wave.remove();
+                });
+            }, 0);
+        });
 }
 /**
  * 隐藏涟漪动画
@@ -3014,9 +3005,9 @@ function showRipple(event) {
     }
     const $target = $(event.target);
     // 获取含 .mdui-ripple 类的元素
-    const $ripple = $target.hasClass('mdui-ripple')
-        ? $target
-        : $target.parents('.mdui-ripple').first();
+    const $ripple = $target.hasClass('mdui-ripple') ?
+        $target :
+        $target.parents('.mdui-ripple').first();
     if (!$ripple.length) {
         return;
     }
@@ -3052,8 +3043,7 @@ function showRipple(event) {
             hideRipple();
         };
         $ripple.on('touchmove', touchMove).on('touchend touchcancel', hideRipple);
-    }
-    else {
+    } else {
         show(event, $ripple);
         $ripple.on(`${moveEvent} ${endEvent} ${cancelEvent}`, hide);
     }
@@ -3093,20 +3083,21 @@ function inputEvent(event, data = {}) {
     // 输入框是否为空
     if (eventType === 'blur' || eventType === 'input') {
         value
-            ? $textfield.addClass('mdui-textfield-not-empty')
-            : $textfield.removeClass('mdui-textfield-not-empty');
+            ?
+            $textfield.addClass('mdui-textfield-not-empty') :
+            $textfield.removeClass('mdui-textfield-not-empty');
     }
     // 输入框是否禁用
-    input.disabled
-        ? $textfield.addClass('mdui-textfield-disabled')
-        : $textfield.removeClass('mdui-textfield-disabled');
+    input.disabled ?
+        $textfield.addClass('mdui-textfield-disabled') :
+        $textfield.removeClass('mdui-textfield-disabled');
     // 表单验证
     if ((eventType === 'input' || eventType === 'blur') &&
         !data.domLoadedEvent &&
         input.validity) {
-        input.validity.valid
-            ? $textfield.removeClass('mdui-textfield-invalid-html5')
-            : $textfield.addClass('mdui-textfield-invalid-html5');
+        input.validity.valid ?
+            $textfield.removeClass('mdui-textfield-invalid-html5') :
+            $textfield.addClass('mdui-textfield-invalid-html5');
     }
     // textarea 高度自动调整
     if ($input.is('textarea')) {
@@ -3154,9 +3145,11 @@ function inputEvent(event, data = {}) {
 }
 $(() => {
     // 绑定事件
-    $document.on('input focus blur', '.mdui-textfield-input', { useCapture: true }, inputEvent);
+    $document.on('input focus blur', '.mdui-textfield-input', {
+        useCapture: true
+    }, inputEvent);
     // 可展开文本框展开
-    $document.on('click', '.mdui-textfield-expandable .mdui-textfield-icon', function () {
+    $document.on('click', '.mdui-textfield-expandable .mdui-textfield-icon', function() {
         $(this)
             .parents('.mdui-textfield')
             .addClass('mdui-textfield-expanded')
@@ -3164,7 +3157,7 @@ $(() => {
             .focus();
     });
     // 可展开文本框关闭
-    $document.on('click', '.mdui-textfield-expanded .mdui-textfield-close', function () {
+    $document.on('click', '.mdui-textfield-expanded .mdui-textfield-close', function() {
         $(this)
             .parents('.mdui-textfield')
             .removeClass('mdui-textfield-expanded')
@@ -3174,13 +3167,13 @@ $(() => {
     /**
      * 初始化文本框
      */
-    mdui.mutation('.mdui-textfield', function () {
+    mdui.mutation('.mdui-textfield', function() {
         $(this).find('.mdui-textfield-input').trigger('input', {
             domLoadedEvent: true,
         });
     });
 });
-mdui.updateTextFields = function (selector) {
+mdui.updateTextFields = function(selector) {
     const $elements = isUndefined(selector) ? $('.mdui-textfield') : $(selector);
     $elements.each((_, element) => {
         $(element).find('.mdui-textfield-input').trigger('input', {
@@ -3216,9 +3209,9 @@ function updateValueStyle($slider) {
     if (isDiscrete) {
         $thumbText.text(value);
     }
-    percent === 0
-        ? $slider.addClass('mdui-slider-zero')
-        : $slider.removeClass('mdui-slider-zero');
+    percent === 0 ?
+        $slider.addClass('mdui-slider-zero') :
+        $slider.removeClass('mdui-slider-zero');
 }
 /**
  * 重新初始化滑块
@@ -3233,8 +3226,9 @@ function reInit($slider) {
     const isDiscrete = $slider.hasClass('mdui-slider-discrete');
     // 禁用状态
     isDisabled
-        ? $slider.addClass('mdui-slider-disabled')
-        : $slider.removeClass('mdui-slider-disabled');
+        ?
+        $slider.addClass('mdui-slider-disabled') :
+        $slider.removeClass('mdui-slider-disabled');
     // 重新填充 HTML
     $slider.find('.mdui-slider-track').remove();
     $slider.find('.mdui-slider-fill').remove();
@@ -3261,12 +3255,12 @@ function reInit($slider) {
 const rangeSelector = '.mdui-slider input[type="range"]';
 $(() => {
     // 滑块滑动事件
-    $document.on('input change', rangeSelector, function () {
+    $document.on('input change', rangeSelector, function() {
         const $slider = $(this).parent();
         updateValueStyle($slider);
     });
     // 开始触摸滑块事件
-    $document.on(startEvent, rangeSelector, function (event) {
+    $document.on(startEvent, rangeSelector, function(event) {
         if (!isAllow(event)) {
             return;
         }
@@ -3278,7 +3272,7 @@ $(() => {
         $slider.addClass('mdui-slider-focus');
     });
     // 结束触摸滑块事件
-    $document.on(endEvent, rangeSelector, function (event) {
+    $document.on(endEvent, rangeSelector, function(event) {
         if (!isAllow(event)) {
             return;
         }
@@ -3292,11 +3286,11 @@ $(() => {
     /**
      * 初始化滑块
      */
-    mdui.mutation('.mdui-slider', function () {
+    mdui.mutation('.mdui-slider', function() {
         reInit($(this));
     });
 });
-mdui.updateSliders = function (selector) {
+mdui.updateSliders = function(selector) {
     const $elements = isUndefined(selector) ? $('.mdui-slider') : $(selector);
     $elements.each((_, element) => {
         reInit($(element));
@@ -3435,7 +3429,7 @@ const customAttr$3 = 'mdui-fab';
 $(() => {
     // mouseenter 不冒泡，无法进行事件委托，这里用 mouseover 代替。
     // 不管是 click 、 mouseover 还是 touchstart ，都先初始化。
-    $document.on('touchstart mousedown mouseover', `[${customAttr$3}]`, function () {
+    $document.on('touchstart mousedown mouseover', `[${customAttr$3}]`, function() {
         new mdui.Fab(this, parseOptions(this, customAttr$3));
     });
 });
@@ -3540,12 +3534,10 @@ class Select {
         if (this.options.position === 'bottom') {
             menuMarginTop = elementHeight;
             transformOriginY = '0px';
-        }
-        else if (this.options.position === 'top') {
+        } else if (this.options.position === 'top') {
             menuMarginTop = -menuHeight - 1;
             transformOriginY = '100%';
-        }
-        else {
+        } else {
             // 菜单高度不能超过窗口高度
             const menuMaxHeight = windowHeight - this.options.gutter * 2;
             if (menuHeight > menuMaxHeight) {
@@ -3566,8 +3558,7 @@ class Select {
             if (menuTop < this.options.gutter) {
                 // 不能超出窗口上方
                 menuMarginTop = -(elementTop - this.options.gutter);
-            }
-            else if (menuTop + menuHeight + this.options.gutter > windowHeight) {
+            } else if (menuTop + menuHeight + this.options.gutter > windowHeight) {
                 // 不能超出窗口下方
                 menuMarginTop = -(elementTop +
                     menuHeight +
@@ -3583,9 +3574,9 @@ class Select {
             .innerWidth(menuWidth)
             .height(menuHeight)
             .css({
-            'margin-top': menuMarginTop + 'px',
-            'transform-origin': 'center ' + transformOriginY + ' 0',
-        });
+                'margin-top': menuMarginTop + 'px',
+                'transform-origin': 'center ' + transformOriginY + ' 0',
+            });
     }
     /**
      * select 是否为打开状态
@@ -3627,8 +3618,8 @@ class Select {
         });
         this.$selected = $(`<span class="mdui-select-selected">${this.selectedText}</span>`);
         this.$element = $(`<div class="mdui-select mdui-select-position-${this.options.position}" ` +
-            `style="${this.$native.attr('style')}" ` +
-            `id="${this.uniqueID}"></div>`)
+                `style="${this.$native.attr('style')}" ` +
+                `id="${this.uniqueID}"></div>`)
             .show()
             .append(this.$selected);
         this.$menu = $('<div class="mdui-select-menu"></div>')
@@ -3647,7 +3638,7 @@ class Select {
         // 点击选项时关闭下拉菜单
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
-        this.$items.on('click', function () {
+        this.$items.on('click', function() {
             if (that.state === 'closing') {
                 return;
             }
@@ -3752,18 +3743,18 @@ mdui.Select = Select;
 
 const customAttr$4 = 'mdui-select';
 $(() => {
-    mdui.mutation(`[${customAttr$4}]`, function () {
+    mdui.mutation(`[${customAttr$4}]`, function() {
         new mdui.Select(this, parseOptions(this, customAttr$4));
     });
 });
 
 $(() => {
     // 滚动时隐藏应用栏
-    mdui.mutation('.mdui-appbar-scroll-hide', function () {
+    mdui.mutation('.mdui-appbar-scroll-hide', function() {
         new mdui.Headroom(this);
     });
     // 滚动时只隐藏应用栏中的工具栏
-    mdui.mutation('.mdui-appbar-scroll-toolbar-hide', function () {
+    mdui.mutation('.mdui-appbar-scroll-toolbar-hide', function() {
         new mdui.Headroom(this, {
             pinnedClass: 'mdui-headroom-pinned-toolbar',
             unpinnedClass: 'mdui-headroom-unpinned-toolbar',
@@ -3886,8 +3877,7 @@ class Tab {
                 }
                 $(targetId).show();
                 this.setIndicatorPosition();
-            }
-            else {
+            } else {
                 $tab.removeClass('mdui-tab-active');
                 $(targetId).hide();
             }
@@ -3926,8 +3916,7 @@ class Tab {
         }
         if (this.$tabs.length > this.activeIndex + 1) {
             this.activeIndex++;
-        }
-        else if (this.options.loop) {
+        } else if (this.options.loop) {
             this.activeIndex = 0;
         }
         this.setActive();
@@ -3941,8 +3930,7 @@ class Tab {
         }
         if (this.activeIndex > 0) {
             this.activeIndex--;
-        }
-        else if (this.options.loop) {
+        } else if (this.options.loop) {
             this.activeIndex = this.$tabs.length - 1;
         }
         this.setActive();
@@ -3957,8 +3945,7 @@ class Tab {
         }
         if (isNumber(index)) {
             this.activeIndex = index;
-        }
-        else {
+        } else {
             this.$tabs.each((i, tab) => {
                 if (tab.id === index) {
                     this.activeIndex === i;
@@ -3990,8 +3977,7 @@ class Tab {
                 this.bindTabEvent(tab);
                 if (this.activeIndex === -1) {
                     this.activeIndex = 0;
-                }
-                else if (index <= this.activeIndex) {
+                } else if (index <= this.activeIndex) {
                     this.activeIndex++;
                 }
             }
@@ -4002,8 +3988,7 @@ class Tab {
             if (newTabsElement.indexOf(tab) < 0) {
                 if (index < this.activeIndex) {
                     this.activeIndex--;
-                }
-                else if (index === this.activeIndex) {
+                } else if (index === this.activeIndex) {
                     this.activeIndex = 0;
                 }
             }
@@ -4016,7 +4001,7 @@ mdui.Tab = Tab;
 
 const customAttr$5 = 'mdui-tab';
 $(() => {
-    mdui.mutation(`[${customAttr$5}]`, function () {
+    mdui.mutation(`[${customAttr$5}]`, function() {
         new mdui.Tab(this, parseOptions(this, customAttr$5));
     });
 });
@@ -4041,19 +4026,16 @@ class Drawer {
         this.overlay = false;
         this.$element = $(selector).first();
         extend(this.options, options);
-        this.position = this.$element.hasClass('mdui-drawer-right')
-            ? 'right'
-            : 'left';
+        this.position = this.$element.hasClass('mdui-drawer-right') ?
+            'right' :
+            'left';
         if (this.$element.hasClass('mdui-drawer-close')) {
             this.state = 'closed';
-        }
-        else if (this.$element.hasClass('mdui-drawer-open')) {
+        } else if (this.$element.hasClass('mdui-drawer-open')) {
             this.state = 'opened';
-        }
-        else if (this.isDesktop()) {
+        } else if (this.isDesktop()) {
             this.state = 'opened';
-        }
-        else {
+        } else {
             this.state = 'closed';
         }
         // 浏览器窗口大小调整时
@@ -4070,16 +4052,14 @@ class Drawer {
                 if (!this.$element.hasClass('mdui-drawer-close')) {
                     this.state = 'opened';
                 }
-            }
-            else if (!this.overlay && this.state === 'opened') {
+            } else if (!this.overlay && this.state === 'opened') {
                 // 由桌面切换到手机平板时。如果抽屉栏是打开着的且没有遮罩层，则关闭抽屉栏
                 if (this.$element.hasClass('mdui-drawer-open')) {
                     $.showOverlay();
                     this.overlay = true;
                     $.lockScreen();
                     $('.mdui-overlay').one('click', () => this.close());
-                }
-                else {
+                } else {
                     this.state = 'closed';
                 }
             }
@@ -4112,26 +4092,31 @@ class Drawer {
         const $body = $('body');
         // 手势触发的范围
         const swipeAreaWidth = 24;
+
         function setPosition(translateX) {
             const rtlTranslateMultiplier = that.position === 'right' ? -1 : 1;
             const transformCSS = `translate(${-1 * rtlTranslateMultiplier * translateX}px, 0) !important;`;
             const transitionCSS = 'initial !important;';
             that.$element.css('cssText', `transform: ${transformCSS}; transition: ${transitionCSS};`);
         }
+
         function cleanPosition() {
             that.$element[0].style.transform = '';
             that.$element[0].style.webkitTransform = '';
             that.$element[0].style.transition = '';
             that.$element[0].style.webkitTransition = '';
         }
+
         function getMaxTranslateX() {
             return that.$element.width() + 10;
         }
+
         function getTranslateX(currentX) {
-            return Math.min(Math.max(swiping === 'closing'
-                ? swipeStartX - currentX
-                : getMaxTranslateX() + swipeStartX - currentX, 0), getMaxTranslateX());
+            return Math.min(Math.max(swiping === 'closing' ?
+                swipeStartX - currentX :
+                getMaxTranslateX() + swipeStartX - currentX, 0), getMaxTranslateX());
         }
+
         function onBodyTouchEnd(event) {
             if (swiping) {
                 let touchX = event.changedTouches[0].pageX;
@@ -4146,23 +4131,19 @@ class Drawer {
                     if (translateRatio < 0.92) {
                         cleanPosition();
                         that.open();
-                    }
-                    else {
+                    } else {
                         cleanPosition();
                     }
-                }
-                else {
+                } else {
                     if (translateRatio > 0.08) {
                         cleanPosition();
                         that.close();
-                    }
-                    else {
+                    } else {
                         cleanPosition();
                     }
                 }
                 $.unlockScreen();
-            }
-            else {
+            } else {
                 maybeSwiping = false;
             }
             $body.off({
@@ -4173,6 +4154,7 @@ class Drawer {
                 touchcancel: onBodyTouchMove,
             });
         }
+
         function onBodyTouchMove(event) {
             let touchX = event.touches[0].pageX;
             if (that.position === 'right') {
@@ -4181,8 +4163,7 @@ class Drawer {
             const touchY = event.touches[0].pageY;
             if (swiping) {
                 setPosition(getTranslateX(touchX));
-            }
-            else if (maybeSwiping) {
+            } else if (maybeSwiping) {
                 const dXAbs = Math.abs(touchX - touchStartX);
                 const dYAbs = Math.abs(touchY - touchStartY);
                 const threshold = 8;
@@ -4191,12 +4172,12 @@ class Drawer {
                     swiping = that.state === 'opened' ? 'closing' : 'opening';
                     $.lockScreen();
                     setPosition(getTranslateX(touchX));
-                }
-                else if (dXAbs <= threshold && dYAbs > threshold) {
+                } else if (dXAbs <= threshold && dYAbs > threshold) {
                     onBodyTouchEnd();
                 }
             }
         }
+
         function onBodyTouchStart(event) {
             touchStartX = event.touches[0].pageX;
             if (that.position === 'right') {
@@ -4216,6 +4197,7 @@ class Drawer {
                 touchcancel: onBodyTouchMove,
             });
         }
+
         function enableSwipeHandling() {
             if (!openNavEventHandler) {
                 $body.on('touchstart', onBodyTouchStart);
@@ -4240,8 +4222,7 @@ class Drawer {
         if (this.$element.hasClass('mdui-drawer-open')) {
             this.state = 'opened';
             this.triggerEvent('opened');
-        }
-        else {
+        } else {
             this.state = 'closed';
             this.triggerEvent('closed');
         }
@@ -4313,7 +4294,7 @@ mdui.Drawer = Drawer;
 
 const customAttr$6 = 'mdui-drawer';
 $(() => {
-    mdui.mutation(`[${customAttr$6}]`, function () {
+    mdui.mutation(`[${customAttr$6}]`, function() {
         const $element = $(this);
         const options = parseOptions(this, customAttr$6);
         const selector = options.target;
@@ -4326,6 +4307,7 @@ $(() => {
 });
 
 const container = {};
+
 function queue(name, func) {
     if (isUndefined(container[name])) {
         container[name] = [];
@@ -4475,8 +4457,7 @@ class Dialog {
         if (this.$element.hasClass('mdui-dialog-open')) {
             this.state = 'opened';
             this.triggerEvent('opened');
-        }
-        else {
+        } else {
             this.state = 'closed';
             this.triggerEvent('closed');
             this.$element.hide();
@@ -4516,8 +4497,7 @@ class Dialog {
         // 点击遮罩层时是否关闭对话框
         if (this.options.modal) {
             $overlay.off('click', this.overlayClick);
-        }
-        else {
+        } else {
             $overlay.on('click', this.overlayClick);
         }
         // 是否显示遮罩层，不显示时，把遮罩层背景透明
@@ -4532,8 +4512,7 @@ class Dialog {
             // 后退按钮关闭对话框
             if (hash) {
                 window.location.hash = `${hash}${hash.indexOf('?') > -1 ? '&' : '?'}mdui-dialog`;
-            }
-            else {
+            } else {
                 window.location.hash = 'mdui-dialog';
             }
             $window.on('hashchange', this.hashchangeEvent);
@@ -4554,7 +4533,7 @@ class Dialog {
         }
         // 如果当前有正在打开或已经打开的对话框,或队列不为空，则先加入队列，等旧对话框开始关闭时再打开
         if ((currentInst &&
-            (currentInst.state === 'opening' || currentInst.state === 'opened')) ||
+                (currentInst.state === 'opening' || currentInst.state === 'opened')) ||
             queue(queueName).length) {
             queue(queueName, () => this.doOpen());
             return;
@@ -4652,7 +4631,7 @@ mdui.Dialog = Dialog;
 const customAttr$7 = 'mdui-dialog';
 const dataName$1 = '_mdui_dialog';
 $(() => {
-    $document.on('click', `[${customAttr$7}]`, function () {
+    $document.on('click', `[${customAttr$7}]`, function() {
         const options = parseOptions(this, customAttr$7);
         const selector = options.target;
         // @ts-ignore
@@ -4672,7 +4651,7 @@ const DEFAULT_BUTTON = {
     bold: false,
     close: true,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClick: () => { },
+    onClick: () => {},
 };
 const DEFAULT_OPTIONS$7 = {
     title: '',
@@ -4686,15 +4665,15 @@ const DEFAULT_OPTIONS$7 = {
     closeOnEsc: true,
     destroyOnClosed: true,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onOpen: () => { },
+    onOpen: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onOpened: () => { },
+    onOpened: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClose: () => { },
+    onClose: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClosed: () => { },
+    onClosed: () => {},
 };
-mdui.dialog = function (options) {
+mdui.dialog = function(options) {
     var _a, _b;
     // 合并配置参数
     options = extend({}, DEFAULT_OPTIONS$7, options);
@@ -4708,18 +4687,18 @@ mdui.dialog = function (options) {
         each(options.buttons, (_, button) => {
             buttonsHTML +=
                 '<a href="javascript:void(0)" ' +
-                    `class="mdui-btn mdui-ripple mdui-text-color-primary ${button.bold ? 'mdui-btn-bold' : ''}">${button.text}</a>`;
+                `class="mdui-btn mdui-ripple mdui-text-color-primary ${button.bold ? 'mdui-btn-bold' : ''}">${button.text}</a>`;
         });
         buttonsHTML += '</div>';
     }
     // Dialog 的 HTML
     const HTML = `<div class="mdui-dialog ${options.cssClass}">` +
-        (options.title
-            ? `<div class="mdui-dialog-title">${options.title}</div>`
-            : '') +
-        (options.content
-            ? `<div class="mdui-dialog-content">${options.content}</div>`
-            : '') +
+        (options.title ?
+            `<div class="mdui-dialog-title">${options.title}</div>` :
+            '') +
+        (options.content ?
+            `<div class="mdui-dialog-content">${options.content}</div>` :
+            '') +
         buttonsHTML +
         '</div>';
     // 实例化 Dialog
@@ -4735,28 +4714,28 @@ mdui.dialog = function (options) {
         instance.$element
             .find('.mdui-dialog-actions .mdui-btn')
             .each((index, button) => {
-            $(button).on('click', () => {
-                options.buttons[index].onClick(instance);
-                if (options.buttons[index].close) {
-                    instance.close();
-                }
+                $(button).on('click', () => {
+                    options.buttons[index].onClick(instance);
+                    if (options.buttons[index].close) {
+                        instance.close();
+                    }
+                });
             });
-        });
     }
     // 绑定打开关闭事件
     instance.$element
         .on('open.mdui.dialog', () => {
-        options.onOpen(instance);
-    })
+            options.onOpen(instance);
+        })
         .on('opened.mdui.dialog', () => {
-        options.onOpened(instance);
-    })
+            options.onOpened(instance);
+        })
         .on('close.mdui.dialog', () => {
-        options.onClose(instance);
-    })
+            options.onClose(instance);
+        })
         .on('closed.mdui.dialog', () => {
-        options.onClosed(instance);
-    });
+            options.onClosed(instance);
+        });
     instance.open();
     return instance;
 };
@@ -4768,7 +4747,7 @@ const DEFAULT_OPTIONS$8 = {
     closeOnEsc: true,
     closeOnConfirm: true,
 };
-mdui.alert = function (text, title, onConfirm, options) {
+mdui.alert = function(text, title, onConfirm, options) {
     if (isFunction(title)) {
         options = onConfirm;
         onConfirm = title;
@@ -4776,7 +4755,7 @@ mdui.alert = function (text, title, onConfirm, options) {
     }
     if (isUndefined(onConfirm)) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onConfirm = () => { };
+        onConfirm = () => {};
     }
     if (isUndefined(options)) {
         options = {};
@@ -4785,14 +4764,12 @@ mdui.alert = function (text, title, onConfirm, options) {
     return mdui.dialog({
         title: title,
         content: text,
-        buttons: [
-            {
-                text: options.confirmText,
-                bold: false,
-                close: options.closeOnConfirm,
-                onClick: onConfirm,
-            },
-        ],
+        buttons: [{
+            text: options.confirmText,
+            bold: false,
+            close: options.closeOnConfirm,
+            onClick: onConfirm,
+        }, ],
         cssClass: 'mdui-dialog-alert',
         history: options.history,
         modal: options.modal,
@@ -4809,7 +4786,7 @@ const DEFAULT_OPTIONS$9 = {
     closeOnCancel: true,
     closeOnConfirm: true,
 };
-mdui.confirm = function (text, title, onConfirm, onCancel, options) {
+mdui.confirm = function(text, title, onConfirm, onCancel, options) {
     if (isFunction(title)) {
         options = onCancel;
         onCancel = onConfirm;
@@ -4818,11 +4795,11 @@ mdui.confirm = function (text, title, onConfirm, onCancel, options) {
     }
     if (isUndefined(onConfirm)) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onConfirm = () => { };
+        onConfirm = () => {};
     }
     if (isUndefined(onCancel)) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onCancel = () => { };
+        onCancel = () => {};
     }
     if (isUndefined(options)) {
         options = {};
@@ -4831,20 +4808,17 @@ mdui.confirm = function (text, title, onConfirm, onCancel, options) {
     return mdui.dialog({
         title: title,
         content: text,
-        buttons: [
-            {
-                text: options.cancelText,
-                bold: false,
-                close: options.closeOnCancel,
-                onClick: onCancel,
-            },
-            {
-                text: options.confirmText,
-                bold: false,
-                close: options.closeOnConfirm,
-                onClick: onConfirm,
-            },
-        ],
+        buttons: [{
+            text: options.cancelText,
+            bold: false,
+            close: options.closeOnCancel,
+            onClick: onCancel,
+        }, {
+            text: options.confirmText,
+            bold: false,
+            close: options.closeOnConfirm,
+            onClick: onConfirm,
+        }, ],
         cssClass: 'mdui-dialog-confirm',
         history: options.history,
         modal: options.modal,
@@ -4865,7 +4839,7 @@ const DEFAULT_OPTIONS$a = {
     defaultValue: '',
     confirmOnEnter: false,
 };
-mdui.prompt = function (label, title, onConfirm, onCancel, options) {
+mdui.prompt = function(label, title, onConfirm, onCancel, options) {
     if (isFunction(title)) {
         options = onCancel;
         onCancel = onConfirm;
@@ -4874,11 +4848,11 @@ mdui.prompt = function (label, title, onConfirm, onCancel, options) {
     }
     if (isUndefined(onConfirm)) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onConfirm = () => { };
+        onConfirm = () => {};
     }
     if (isUndefined(onCancel)) {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onCancel = () => { };
+        onCancel = () => {};
     }
     if (isUndefined(options)) {
         options = {};
@@ -4886,12 +4860,12 @@ mdui.prompt = function (label, title, onConfirm, onCancel, options) {
     options = extend({}, DEFAULT_OPTIONS$a, options);
     const content = '<div class="mdui-textfield">' +
         (label ? `<label class="mdui-textfield-label">${label}</label>` : '') +
-        (options.type === 'text'
-            ? `<input class="mdui-textfield-input" type="text" value="${options.defaultValue}" ${options.maxlength ? 'maxlength="' + options.maxlength + '"' : ''}/>`
-            : '') +
-        (options.type === 'textarea'
-            ? `<textarea class="mdui-textfield-input" ${options.maxlength ? 'maxlength="' + options.maxlength + '"' : ''}>${options.defaultValue}</textarea>`
-            : '') +
+        (options.type === 'text' ?
+            `<input class="mdui-textfield-input" type="text" value="${options.defaultValue}" ${options.maxlength ? 'maxlength="' + options.maxlength + '"' : ''}/>` :
+            '') +
+        (options.type === 'textarea' ?
+            `<textarea class="mdui-textfield-input" ${options.maxlength ? 'maxlength="' + options.maxlength + '"' : ''}>${options.defaultValue}</textarea>` :
+            '') +
         '</div>';
     const onCancelClick = (dialog) => {
         const value = dialog.$element.find('.mdui-textfield-input').val();
@@ -4904,20 +4878,17 @@ mdui.prompt = function (label, title, onConfirm, onCancel, options) {
     return mdui.dialog({
         title,
         content,
-        buttons: [
-            {
-                text: options.cancelText,
-                bold: false,
-                close: options.closeOnCancel,
-                onClick: onCancelClick,
-            },
-            {
-                text: options.confirmText,
-                bold: false,
-                close: options.closeOnConfirm,
-                onClick: onConfirmClick,
-            },
-        ],
+        buttons: [{
+            text: options.cancelText,
+            bold: false,
+            close: options.closeOnCancel,
+            onClick: onCancelClick,
+        }, {
+            text: options.confirmText,
+            bold: false,
+            close: options.closeOnConfirm,
+            onClick: onConfirmClick,
+        }, ],
         cssClass: 'mdui-dialog-prompt',
         history: options.history,
         modal: options.modal,
@@ -4981,31 +4952,31 @@ class Tooltip {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
         this.$target
-            .on('touchstart mouseenter', function (event) {
-            if (that.isDisabled(this)) {
-                return;
-            }
-            if (!isAllow(event)) {
-                return;
-            }
-            register(event);
-            that.open();
-        })
-            .on('touchend mouseleave', function (event) {
-            if (that.isDisabled(this)) {
-                return;
-            }
-            if (!isAllow(event)) {
-                return;
-            }
-            that.close();
-        })
-            .on(unlockEvent, function (event) {
-            if (that.isDisabled(this)) {
-                return;
-            }
-            register(event);
-        });
+            .on('touchstart mouseenter', function(event) {
+                if (that.isDisabled(this)) {
+                    return;
+                }
+                if (!isAllow(event)) {
+                    return;
+                }
+                register(event);
+                that.open();
+            })
+            .on('touchend mouseleave', function(event) {
+                if (that.isDisabled(this)) {
+                    return;
+                }
+                if (!isAllow(event)) {
+                    return;
+                }
+                that.close();
+            })
+            .on(unlockEvent, function(event) {
+                if (that.isDisabled(this)) {
+                    return;
+                }
+                register(event);
+            });
     }
     /**
      * 元素是否已禁用
@@ -5045,18 +5016,14 @@ class Tooltip {
                 2 <
                 $window.height()) {
                 position = 'bottom';
-            }
-            else if (targetMargin + tooltipHeight + 2 < targetProps.top) {
+            } else if (targetMargin + tooltipHeight + 2 < targetProps.top) {
                 position = 'top';
-            }
-            else if (targetMargin + tooltipWidth + 2 < targetProps.left) {
+            } else if (targetMargin + tooltipWidth + 2 < targetProps.left) {
                 position = 'left';
-            }
-            else if (targetProps.width + targetMargin + tooltipWidth + 2 <
+            } else if (targetProps.width + targetMargin + tooltipWidth + 2 <
                 $window.width() - targetProps.left) {
                 position = 'right';
-            }
-            else {
+            } else {
                 position = 'bottom';
             }
         }
@@ -5069,8 +5036,7 @@ class Tooltip {
                 break;
             case 'top':
                 marginLeft = -1 * (tooltipWidth / 2);
-                marginTop =
-                    -1 * (tooltipHeight + targetProps.height / 2 + targetMargin);
+                marginTop = -1 * (tooltipHeight + targetProps.height / 2 + targetMargin);
                 this.$element.transformOrigin('bottom center');
                 break;
             case 'left':
@@ -5106,8 +5072,7 @@ class Tooltip {
         if (this.$element.hasClass('mdui-tooltip-open')) {
             this.state = 'opened';
             this.triggerEvent('opened');
-        }
-        else {
+        } else {
             this.state = 'closed';
             this.triggerEvent('closed');
         }
@@ -5147,8 +5112,7 @@ class Tooltip {
         this.setPosition();
         if (this.options.delay) {
             this.timeoutId = setTimeout(() => this.doOpen(), this.options.delay);
-        }
-        else {
+        } else {
             this.timeoutId = null;
             this.doOpen();
         }
@@ -5189,7 +5153,7 @@ const customAttr$8 = 'mdui-tooltip';
 const dataName$2 = '_mdui_tooltip';
 $(() => {
     // mouseenter 不能冒泡，所以这里用 mouseover 代替
-    $document.on('touchstart mouseover', `[${customAttr$8}]`, function () {
+    $document.on('touchstart mouseover', `[${customAttr$8}]`, function() {
         const $target = $(this);
         let instance = $target.data(dataName$2);
         if (!instance) {
@@ -5208,17 +5172,17 @@ const DEFAULT_OPTIONS$c = {
     closeOnButtonClick: true,
     closeOnOutsideClick: true,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClick: () => { },
+    onClick: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onButtonClick: () => { },
+    onButtonClick: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onOpen: () => { },
+    onOpen: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onOpened: () => { },
+    onOpened: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClose: () => { },
+    onClose: () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onClosed: () => { },
+    onClosed: () => {},
 };
 /**
  * 当前打开着的 Snackbar
@@ -5249,16 +5213,15 @@ class Snackbar {
         if (this.options.buttonColor.indexOf('#') === 0 ||
             this.options.buttonColor.indexOf('rgb') === 0) {
             buttonColorStyle = `style="color:${this.options.buttonColor}"`;
-        }
-        else if (this.options.buttonColor !== '') {
+        } else if (this.options.buttonColor !== '') {
             buttonColorClass = `mdui-text-color-${this.options.buttonColor}`;
         }
         // 添加 HTML
         this.$element = $('<div class="mdui-snackbar">' +
             `<div class="mdui-snackbar-text">${this.options.message}</div>` +
-            (this.options.buttonText
-                ? `<a href="javascript:void(0)" class="mdui-snackbar-action mdui-btn mdui-ripple mdui-ripple-white ${buttonColorClass}" ${buttonColorStyle}>${this.options.buttonText}</a>`
-                : '') +
+            (this.options.buttonText ?
+                `<a href="javascript:void(0)" class="mdui-snackbar-action mdui-btn mdui-ripple mdui-ripple-white ${buttonColorClass}" ${buttonColorStyle}>${this.options.buttonText}</a>` :
+                '') +
             '</div>').appendTo(document.body);
         // 设置位置
         this.setPosition('close');
@@ -5287,15 +5250,13 @@ class Snackbar {
         // translateX
         if (position === 'bottom' || position === 'top') {
             translateX = '-50%';
-        }
-        else {
+        } else {
             translateX = '0';
         }
         // translateY
         if (state === 'open') {
             translateY = '0';
-        }
-        else {
+        } else {
             if (position === 'bottom') {
                 translateY = snackbarHeight;
             }
@@ -5387,11 +5348,10 @@ class Snackbar {
         });
     }
 }
-mdui.snackbar = function (message, options = {}) {
+mdui.snackbar = function(message, options = {}) {
     if (isString(message)) {
         options.message = message;
-    }
-    else {
+    } else {
         options = message;
     }
     const instance = new Snackbar(options);
@@ -5401,7 +5361,7 @@ mdui.snackbar = function (message, options = {}) {
 
 $(() => {
     // 切换导航项
-    $document.on('click', '.mdui-bottom-nav>a', function () {
+    $document.on('click', '.mdui-bottom-nav>a', function() {
         const $item = $(this);
         const $bottomNav = $item.parent();
         $bottomNav.children('a').each((index, item) => {
@@ -5412,12 +5372,13 @@ $(() => {
                 });
             }
             isThis
-                ? $(item).addClass('mdui-bottom-nav-active')
-                : $(item).removeClass('mdui-bottom-nav-active');
+                ?
+                $(item).addClass('mdui-bottom-nav-active') :
+                $(item).removeClass('mdui-bottom-nav-active');
         });
     });
     // 滚动时隐藏 mdui-bottom-nav-scroll-hide
-    mdui.mutation('.mdui-bottom-nav-scroll-hide', function () {
+    mdui.mutation('.mdui-bottom-nav-scroll-hide', function() {
         new mdui.Headroom(this, {
             pinnedClass: 'mdui-headroom-pinned-down',
             unpinnedClass: 'mdui-headroom-unpinned-down',
@@ -5448,20 +5409,20 @@ function layerHTML(index = false) {
  */
 function fillHTML(spinner) {
     const $spinner = $(spinner);
-    const layer = $spinner.hasClass('mdui-spinner-colorful')
-        ? layerHTML(1) + layerHTML(2) + layerHTML(3) + layerHTML(4)
-        : layerHTML();
+    const layer = $spinner.hasClass('mdui-spinner-colorful') ?
+        layerHTML(1) + layerHTML(2) + layerHTML(3) + layerHTML(4) :
+        layerHTML();
     $spinner.html(layer);
 }
 $(() => {
     // 页面加载完后自动填充 HTML 结构
-    mdui.mutation('.mdui-spinner', function () {
+    mdui.mutation('.mdui-spinner', function() {
         fillHTML(this);
     });
 });
-mdui.updateSpinners = function (selector) {
+mdui.updateSpinners = function(selector) {
     const $elements = isUndefined(selector) ? $('.mdui-spinner') : $(selector);
-    $elements.each(function () {
+    $elements.each(function() {
         fillHTML(this);
     });
 };
@@ -5513,7 +5474,7 @@ class Menu {
         // 点击不含子菜单的菜单条目关闭菜单
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
-        $document.on('click', '.mdui-menu-item', function () {
+        $document.on('click', '.mdui-menu-item', function() {
             const $item = $(this);
             if (!$item.find('.mdui-menu').length &&
                 $item.attr('disabled') === undefined) {
@@ -5576,18 +5537,15 @@ class Menu {
             if (anchorBottom + (isCovered ? anchorHeight : 0) > menuHeight + gutter) {
                 // 判断下方是否放得下菜单
                 position = 'bottom';
-            }
-            else if (anchorTop + (isCovered ? anchorHeight : 0) >
+            } else if (anchorTop + (isCovered ? anchorHeight : 0) >
                 menuHeight + gutter) {
                 // 判断上方是否放得下菜单
                 position = 'top';
-            }
-            else {
+            } else {
                 // 上下都放不下，居中显示
                 position = 'center';
             }
-        }
-        else {
+        } else {
             position = this.options.position;
         }
         // 自动判断菜单对齐方式
@@ -5595,17 +5553,14 @@ class Menu {
             if (anchorRight + anchorWidth > menuWidth + gutter) {
                 // 判断右侧是否放得下菜单
                 align = 'left';
-            }
-            else if (anchorLeft + anchorWidth > menuWidth + gutter) {
+            } else if (anchorLeft + anchorWidth > menuWidth + gutter) {
                 // 判断左侧是否放得下菜单
                 align = 'right';
-            }
-            else {
+            } else {
                 // 左右都放不下，居中显示
                 align = 'center';
             }
-        }
-        else {
+        } else {
             align = this.options.align;
         }
         // 设置菜单位置
@@ -5613,15 +5568,13 @@ class Menu {
             transformOriginY = '0';
             menuTop =
                 (isCovered ? 0 : anchorHeight) +
-                    (isFixed ? anchorTop : anchorOffsetTop);
-        }
-        else if (position === 'top') {
+                (isFixed ? anchorTop : anchorOffsetTop);
+        } else if (position === 'top') {
             transformOriginY = '100%';
             menuTop =
                 (isCovered ? anchorHeight : 0) +
-                    (isFixed ? anchorTop - menuHeight : anchorOffsetTop - menuHeight);
-        }
-        else {
+                (isFixed ? anchorTop - menuHeight : anchorOffsetTop - menuHeight);
+        } else {
             transformOriginY = '50%';
             // =====================在窗口中居中
             // 显示的菜单的高度，简单菜单高度不超过窗口高度，若超过了则在菜单内部显示滚动条
@@ -5636,21 +5589,19 @@ class Menu {
             }
             menuTop =
                 (windowHeight - menuHeightTemp) / 2 +
-                    (isFixed ? 0 : anchorOffsetTop - anchorTop);
+                (isFixed ? 0 : anchorOffsetTop - anchorTop);
         }
         this.$element.css('top', `${menuTop}px`);
         // 设置菜单对齐方式
         if (align === 'left') {
             transformOriginX = '0';
             menuLeft = isFixed ? anchorLeft : anchorOffsetLeft;
-        }
-        else if (align === 'right') {
+        } else if (align === 'right') {
             transformOriginX = '100%';
-            menuLeft = isFixed
-                ? anchorLeft + anchorWidth - menuWidth
-                : anchorOffsetLeft + anchorWidth - menuWidth;
-        }
-        else {
+            menuLeft = isFixed ?
+                anchorLeft + anchorWidth - menuWidth :
+                anchorOffsetLeft + anchorWidth - menuWidth;
+        } else {
             transformOriginX = '50%';
             //=======================在窗口中居中
             // 显示的菜单的宽度，菜单宽度不能超过窗口宽度
@@ -5662,7 +5613,7 @@ class Menu {
             }
             menuLeft =
                 (windowWidth - menuWidthTemp) / 2 +
-                    (isFixed ? 0 : anchorOffsetLeft - anchorLeft);
+                (isFixed ? 0 : anchorOffsetLeft - anchorLeft);
         }
         this.$element.css('left', `${menuLeft}px`);
         // 设置菜单动画方向
@@ -5698,12 +5649,10 @@ class Menu {
         if (windowHeight - itemTop > submenuHeight) {
             // 判断下方是否放得下菜单
             position = 'bottom';
-        }
-        else if (itemTop + itemHeight > submenuHeight) {
+        } else if (itemTop + itemHeight > submenuHeight) {
             // 判断上方是否放得下菜单
             position = 'top';
-        }
-        else {
+        } else {
             // 默认放在下方
             position = 'bottom';
         }
@@ -5711,12 +5660,10 @@ class Menu {
         if (windowWidth - itemLeft - itemWidth > submenuWidth) {
             // 判断右侧是否放得下菜单
             align = 'left';
-        }
-        else if (itemLeft > submenuWidth) {
+        } else if (itemLeft > submenuWidth) {
             // 判断左侧是否放得下菜单
             align = 'right';
-        }
-        else {
+        } else {
             // 默认放在右侧
             align = 'left';
         }
@@ -5724,8 +5671,7 @@ class Menu {
         if (position === 'bottom') {
             transformOriginY = '0';
             submenuTop = '0';
-        }
-        else if (position === 'top') {
+        } else if (position === 'top') {
             transformOriginY = '100%';
             submenuTop = -submenuHeight + itemHeight;
         }
@@ -5734,8 +5680,7 @@ class Menu {
         if (align === 'left') {
             transformOriginX = '0';
             submenuLeft = itemWidth;
-        }
-        else if (align === 'right') {
+        } else if (align === 'right') {
             transformOriginX = '100%';
             submenuLeft = -submenuWidth;
         }
@@ -5783,9 +5728,9 @@ class Menu {
      * @param $submenu
      */
     toggleSubMenu($submenu) {
-        $submenu.hasClass('mdui-menu-open')
-            ? this.closeSubMenu($submenu)
-            : this.openSubMenu($submenu);
+        $submenu.hasClass('mdui-menu-open') ?
+            this.closeSubMenu($submenu) :
+            this.openSubMenu($submenu);
     }
     /**
      * 绑定子菜单事件
@@ -5794,7 +5739,7 @@ class Menu {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const that = this;
         // 点击打开子菜单
-        this.$element.on('click', '.mdui-menu-item', function (event) {
+        this.$element.on('click', '.mdui-menu-item', function(event) {
             const $item = $(this);
             const $target = $(event.target);
             // 禁用状态菜单不操作
@@ -5816,12 +5761,12 @@ class Menu {
                 .parent('.mdui-menu')
                 .children('.mdui-menu-item')
                 .each((_, item) => {
-                const $tmpSubmenu = $(item).children('.mdui-menu');
-                if ($tmpSubmenu.length &&
-                    (!$submenu.length || !$tmpSubmenu.is($submenu))) {
-                    that.closeSubMenu($tmpSubmenu);
-                }
-            });
+                    const $tmpSubmenu = $(item).children('.mdui-menu');
+                    if ($tmpSubmenu.length &&
+                        (!$submenu.length || !$tmpSubmenu.is($submenu))) {
+                        that.closeSubMenu($tmpSubmenu);
+                    }
+                });
             // 切换当前子菜单
             if ($submenu.length) {
                 that.toggleSubMenu($submenu);
@@ -5831,7 +5776,7 @@ class Menu {
             // 临时存储 setTimeout 对象
             let timeout = null;
             let timeoutOpen = null;
-            this.$element.on('mouseover mouseout', '.mdui-menu-item', function (event) {
+            this.$element.on('mouseover mouseout', '.mdui-menu-item', function(event) {
                 const $item = $(this);
                 const eventType = event.type;
                 const $relatedTarget = $(event.relatedTarget);
@@ -5957,7 +5902,7 @@ mdui.Menu = Menu;
 const customAttr$9 = 'mdui-menu';
 const dataName$3 = '_mdui_menu';
 $(() => {
-    $document.on('click', `[${customAttr$9}]`, function () {
+    $document.on('click', `[${customAttr$9}]`, function() {
         const $this = $(this);
         let instance = $this.data(dataName$3);
         if (!instance) {
