@@ -314,8 +314,7 @@ function merge(first, second) {
 }
 
 $.fn.get = function(index) {
-    return index === undefined ?
-        [].slice.call(this) :
+    return index === undefined ? [].slice.call(this) :
         this[index >= 0 ? index : index + this.length];
 };
 
@@ -1111,8 +1110,7 @@ each(['before', 'after'], (nameIndex, name) => {
             args = args.reverse();
         }
         return this.each((index, element) => {
-            const targets = isFunction(args[0]) ?
-                [args[0].call(element, index, element.innerHTML)] :
+            const targets = isFunction(args[0]) ? [args[0].call(element, index, element.innerHTML)] :
                 args;
             each(targets, (_, target) => {
                 let $target;
@@ -1278,8 +1276,7 @@ each(['prepend', 'append'], (nameIndex, name) => {
             if (!childLength) {
                 element.appendChild(child);
             }
-            let contents = isFunction(args[0]) ?
-                [args[0].call(element, index, element.innerHTML)] :
+            let contents = isFunction(args[0]) ? [args[0].call(element, index, element.innerHTML)] :
                 args;
             // 如果不是字符串，则仅第一个元素使用原始元素，其他的都克隆自第一个元素
             if (index) {
@@ -1905,11 +1902,9 @@ function set$1(element, value, index) {
         value;
     $element.css({
         top: computedValue.top != null ?
-            computedValue.top - currentOffset.top + currentTop :
-            undefined,
+            computedValue.top - currentOffset.top + currentTop : undefined,
         left: computedValue.left != null ?
-            computedValue.left - currentOffset.left + currentLeft :
-            undefined,
+            computedValue.left - currentOffset.left + currentLeft : undefined,
     });
 }
 $.fn.offset = function(value) {
