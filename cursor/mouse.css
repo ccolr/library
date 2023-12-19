@@ -1,0 +1,8 @@
+body {
+    cursor: url(https://cdn.jsdelivr.net/gh/ccolr/library@main/cursor/default.cur),
+        auto;
+}
+img, a {
+    cursor: url(https://cdn.jsdelivr.net/gh/ccolr/library@main/cursor/pointer.cur),
+        auto;
+}
